@@ -30,6 +30,15 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         }, failure: { (error: NSError) -> () in
                 print(error.localizedDescription)
         })
+        
+        // Initialize a UIRefreshControl
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(refreshControl, atIndex: 0)
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        tableView.reloadData()
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -63,12 +72,12 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         let tweet = tweets[indexPath!.row]
         
         if tweet.retweeted == false {
-            self.tweets![indexPath!.row].retweetCount += 1
+            tweets![indexPath!.row].retweetCount += 1
             tweet.retweeted = true
             client.retweet(tweet.tweetId!)
             tableView.reloadData()
         } else if tweet.retweeted == true {
-            self.tweets![indexPath!.row].retweetCount -= 1
+            tweets![indexPath!.row].retweetCount -= 1
             tweet.retweeted = false
             client.unRetweet(tweet.tweetId!)
             tableView.reloadData()
@@ -83,16 +92,16 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         let indexPath = tableView.indexPathForCell(cell)
         let tweet = tweets[indexPath!.row]
         
-        if tweet.favorited == false{
-            self.tweets![indexPath!.row].favoritesCount += 1
+        if tweet.favorited == false {
+            tweets![indexPath!.row].favoritesCount += 1
             tweet.favorited = true
             client.favorite(tweet.tweetId!)
-            self.tableView.reloadData()
-        } else if tweet.favorited == true{
-            self.tweets![indexPath!.row].favoritesCount -= 1
+            tableView.reloadData()
+        } else if tweet.favorited == true {
+            tweets![indexPath!.row].favoritesCount -= 1
             tweet.favorited = false
             client.unFavorite(tweet.tweetId!)
-            self.tableView.reloadData()
+            tableView.reloadData()
         }
     }
     
@@ -100,15 +109,40 @@ class TweetsViewController: UIViewController, UITableViewDataSource, UITableView
         
     }
     
+    func refreshControlAction(refreshControl: UIRefreshControl) {
+        client.homeTimeline({ (tweets: [Tweet]) -> () in
+            self.tweets = tweets
+            self.tableView.reloadData()
+            }, failure: { (error: NSError) -> () in
+                print(error.localizedDescription)
+        })
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        // Hide the RefreshControl
+        refreshControl.endRefreshing()
     }
-    */
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "detailSegue" {
+            let cell = sender as! UITableViewCell
+            let indexPath = tableView.indexPathForCell(cell)
+            let tweet = tweets![indexPath!.row]
+            
+            let tweetDetailViewController = segue.destinationViewController as! TweetDetailViewController
+            tweetDetailViewController.tweet = tweet
+            
+            print("Detail segue preparation called")
+        }
+        
+        if segue.identifier == "composeSegue" {
+            let profileUrl = User.currentUser?.profileUrl
+            
+            let composeViewController = segue.destinationViewController as! ComposeViewController
+            composeViewController.profileUrl = profileUrl
+            
+            print("Compose segue preparation called")
+        }
+        
+    }
+    
 
 }

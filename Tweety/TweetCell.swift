@@ -41,15 +41,15 @@ class TweetCell: UITableViewCell {
             replyButton.imageView?.image = UIImage(named: "reply-action_0")
             
             if tweet.retweeted {
-                retweetButton.imageView?.image = UIImage(named: "retweet-action-on-green")
+                retweetButton.setImage(UIImage(named: "retweet-action-on-green"), forState: .Normal)
             } else {
-                retweetButton.imageView?.image = UIImage(named: "retweet-action_default")
+                retweetButton.setImage(UIImage(named: "retweet-action_default"), forState: .Normal)
             }
             
             if tweet.favorited {
-                favoriteButton.imageView?.image = UIImage(named: "like-action-on-red")
+                favoriteButton.setImage(UIImage(named: "like-action-on-red"), forState: .Normal)
             } else {
-                favoriteButton.imageView?.image = UIImage(named: "like-action-off")
+                favoriteButton.setImage(UIImage(named: "like-action-off"), forState: .Normal)
             }
             
         }
